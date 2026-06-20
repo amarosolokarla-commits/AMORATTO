@@ -476,6 +476,14 @@ tbody td{padding:11px 13px;color:var(--espresso);}
         <div class="form-group"><label>Cantidad</label><input type="number" id="ped-cantidad" value="1" min="1"></div>
         <div class="form-group"><label>Precio Total ($)</label><input type="number" id="ped-precio" placeholder="0.00"></div>
         <div class="form-group full"><label>Notas</label><input type="text" id="ped-notas" placeholder="Ej. Sin azúcar, dedicatoria..."></div>
+        <div class="form-group full">
+          <label>Forma de Pago del Anticipo / Pedido</label>
+          <div class="pago-select-wrap" style="margin-top:6px">
+            <div class="pago-opt" id="ped-opt-efectivo" onclick="selectPagoPedido('efectivo')"><div class="pago-opt-icon">💵</div>Efectivo</div>
+            <div class="pago-opt" id="ped-opt-transferencia" onclick="selectPagoPedido('transferencia')"><div class="pago-opt-icon">📲</div>Transferencia</div>
+            <div class="pago-opt" id="ped-opt-pendiente" onclick="selectPagoPedido('pendiente')" style="flex:0.6"><div class="pago-opt-icon">⏳</div>Al entregar</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-pedido')">Cancelar</button><button class="btn btn-primary" onclick="savePedido()">Guardar Pedido</button></div>
@@ -535,6 +543,7 @@ let state = { cajaInicial:0, productos:[], ventas:[], pedidos:[], ingresos:[], e
 let ventaItems = {};
 let ventaPago = '';
 let ingresoPago = '';
+let pedidoPago = 'pendiente';
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', () => {
@@ -813,7 +822,11 @@ function openPedidoModal() {
   document.getElementById('grupo-ubicacion').style.display='none';
   const sel=document.getElementById('ped-producto');
   sel.innerHTML='<option value="">Seleccionar...</option>'+state.productos.map(p=>`<option value="${p.nombre}" data-precio="${p.precio}">${p.nombre} — ${fmt(p.precio)}</option>`).join('');
-  sel.onchange=()=>{const o=sel.options[sel.selectedIndex];if(o.dataset.precio)document.getElementById('ped-precio').value=o.dataset.precio;};
+  sel.onchange=()=>{const o=sel.options[sel.selectedIndex];if(o&&o.dataset.precio){const qty=Number(document.getElementById('ped-cantidad').value)||1;document.getElementById('ped-precio').value=(Number(o.dataset.precio)*qty).toFixed(2);}};
+  document.getElementById('ped-cantidad').oninput=()=>{const o=sel.options[sel.selectedIndex];if(o&&o.dataset.precio){const qty=Number(document.getElementById('ped-cantidad').value)||1;document.getElementById('ped-precio').value=(Number(o.dataset.precio)*qty).toFixed(2);}};
+  // reset pago pedido
+  pedidoPago='';
+  ['ped-opt-efectivo','ped-opt-transferencia','ped-opt-pendiente'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='pago-opt';});
   openModal('modal-pedido');
 }
 function toggleUbicacion(){document.getElementById('grupo-ubicacion').style.display=document.getElementById('ped-tipo-entrega').value==='domicilio'?'block':'none';}
@@ -827,6 +840,7 @@ async function savePedido() {
   const {data,error}=await db.from('pedidos').insert({
     num,cliente,producto,fecha,hora:document.getElementById('ped-hora').value,
     tipo_entrega:document.getElementById('ped-tipo-entrega').value,
+    forma_pago:pedidoPago||'pendiente',
     ubicacion:document.getElementById('ped-ubicacion').value.trim(),
     cantidad:document.getElementById('ped-cantidad').value,
     precio:document.getElementById('ped-precio').value||null,
@@ -844,7 +858,8 @@ async function updatePedidoStatus(id,status) {
   ped.status=status;
   if(status==='finalizado'&&ped.precio) {
     const now=new Date();
-    const {data:i}=await db.from('ingresos').insert({concepto:`Pedido #${ped.num} — ${ped.cliente}`,monto:Number(ped.precio),forma_pago:'efectivo',fecha:now.toLocaleDateString('es-MX')}).select().single();
+    const pagoFinal = ped.forma_pago&&ped.forma_pago!=='pendiente' ? ped.forma_pago : (confirm('¿El pago fue en efectivo?\nAcepta = Efectivo | Cancela = Transferencia')?'efectivo':'transferencia');
+    const {data:i}=await db.from('ingresos').insert({concepto:`Pedido #${ped.num} — ${ped.cliente}`,monto:Number(ped.precio),forma_pago:pagoFinal,fecha:now.toLocaleDateString('es-MX')}).select().single();
     state.ingresos.push(i);
     toast('Pedido #'+ped.num+' finalizado — ingreso registrado ✓');
   } else if(status==='cancelado') toast('Pedido #'+ped.num+' cancelado');
@@ -861,6 +876,7 @@ function renderPedidos() {
         <div class="pedido-name">${p.cliente}</div>
         <div class="pedido-details">
           📦 ${p.producto}${p.cantidad>1?' ×'+p.cantidad:''} ${p.precio?'· '+fmt(p.precio):''}<br>
+          ${p.forma_pago&&p.forma_pago!=='pendiente'?(p.forma_pago==='efectivo'?'💵 Efectivo':'📲 Transferencia'):'⏳ Pago al entregar'} &nbsp;·&nbsp;
           📅 ${p.fecha}${p.hora?' a las '+p.hora:''}<br>
           ${p.tipo_entrega==='domicilio'?'📍 '+(p.ubicacion||'Sin dirección'):'🏪 Pasa a recoger'}
           ${p.notas?'<br>💬 '+p.notas:''}
@@ -887,6 +903,12 @@ function selectPagoIngreso(tipo){
   ingresoPagoSel=tipo;
   ['ing-opt-efectivo','ing-opt-transferencia'].forEach(id=>document.getElementById(id).className='pago-opt');
   document.getElementById('ing-opt-'+tipo).classList.add('selected-'+tipo);
+}
+function selectPagoPedido(tipo){
+  pedidoPago=tipo;
+  ['ped-opt-efectivo','ped-opt-transferencia','ped-opt-pendiente'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='pago-opt';});
+  const sel=document.getElementById('ped-opt-'+tipo);
+  if(sel) sel.classList.add(tipo==='pendiente'?'selected-transferencia':'selected-'+tipo);
 }
 function openIngresoModal(){
   document.getElementById('ing-concepto').value='';document.getElementById('ing-monto').value='';
