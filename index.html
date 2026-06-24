@@ -212,6 +212,9 @@ tbody td{padding:11px 13px;color:var(--espresso);}
 .empty-state{text-align:center;padding:50px 20px;color:var(--warm-gray);}
 .empty-state .es-icon{font-size:36px;margin-bottom:12px;opacity:.35;}
 .empty-state p{font-size:13px;letter-spacing:0.05em;}
+.fin-tab{background:none;border:none;padding:10px 24px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.fin-tab.active{color:var(--espresso);border-bottom-color:var(--gold);}
+.fin-tab:hover{color:var(--espresso);}
 </style>
 </head>
 <body>
@@ -311,6 +314,28 @@ tbody td{padding:11px 13px;color:var(--espresso);}
         <div class="card-title"><span class="ti">◎</span> Pedidos Pendientes</div>
         <div id="dash-pedidos-list"><div class="empty-state"><div class="es-icon">◎</div><p>Sin pedidos pendientes</p></div></div>
       </div>
+
+      <!-- RESUMEN POR FECHAS -->
+      <div class="card">
+        <div class="card-title"><span class="ti">◈</span> Resumen por Fechas</div>
+        <div class="form-row" style="margin-bottom:18px;align-items:flex-end;">
+          <div class="form-group"><label>Fecha Inicio</label><input type="date" id="rpt-fecha-ini"></div>
+          <div class="form-group"><label>Fecha Fin</label><input type="date" id="rpt-fecha-fin"></div>
+          <button class="btn btn-primary" onclick="generarResumen()">Buscar</button>
+          <button class="btn btn-outline" onclick="resumenHoy()">Hoy</button>
+          <button class="btn btn-outline" onclick="resumenEstaSemana()">Esta semana</button>
+        </div>
+        <div id="rpt-resultado" style="display:none">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+            <div class="caja-item"><div class="caja-label">Total Vendido</div><div class="caja-val" id="rpt-total">$0</div></div>
+            <div class="caja-item" style="border-left-color:#7B9E6B"><div class="caja-label">Efectivo</div><div class="caja-val" id="rpt-efectivo">$0</div></div>
+            <div class="caja-item" style="border-left-color:#6B8BAE"><div class="caja-label">Transferencia</div><div class="caja-val" id="rpt-transferencia">$0</div></div>
+            <div class="caja-item" style="border-left-color:var(--gold)"><div class="caja-label">Núm. Ventas</div><div class="caja-val" id="rpt-num-ventas">0</div></div>
+          </div>
+          <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:12px;">Productos más vendidos</div>
+          <div id="rpt-productos-ranking"></div>
+        </div>
+      </div>
     </div>
 
     <!-- PRODUCTOS -->
@@ -337,35 +362,60 @@ tbody td{padding:11px 13px;color:var(--espresso);}
         <div class="card-title"><span class="ti">◎</span> Gestión de Pedidos
           <button class="btn btn-primary" style="margin-left:auto" onclick="openPedidoModal()">+ Nuevo Pedido</button>
         </div>
+        <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--cream-dark);">
+          <button class="fin-tab active" id="ped-tab-pendiente" onclick="switchPedidoTab('pendiente')">Pendientes</button>
+          <button class="fin-tab" id="ped-tab-finalizado" onclick="switchPedidoTab('finalizado')">Finalizados</button>
+          <button class="fin-tab" id="ped-tab-cancelado" onclick="switchPedidoTab('cancelado')">Cancelados</button>
+          <button class="fin-tab" id="ped-tab-todos" onclick="switchPedidoTab('todos')">Todos</button>
+        </div>
         <div id="pedidos-list"><div class="empty-state"><div class="es-icon">◎</div><p>Sin pedidos registrados</p></div></div>
       </div>
     </div>
 
     <!-- FINANZAS -->
     <div id="page-finanzas" class="page-content">
-      <div class="caja-grid">
-        <div class="caja-item"><div class="caja-label">Caja Inicial</div><div class="caja-val" id="caja-inicial-display">$0.00</div></div>
-        <div class="caja-item" style="border-left-color:var(--success)"><div class="caja-label">Total Ingresos</div><div class="caja-val" id="fin-ingresos-total">$0.00</div></div>
-        <div class="caja-item" style="border-left-color:var(--danger)"><div class="caja-label">Total Egresos</div><div class="caja-val" id="fin-egresos-total">$0.00</div></div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:0;margin-bottom:22px;border-bottom:2px solid var(--cream-dark);">
+        <button class="fin-tab active" id="tab-semanal" onclick="switchFinTab('semanal')">Esta Semana</button>
+        <button class="fin-tab" id="tab-global" onclick="switchFinTab('global')">Balance Global</button>
       </div>
-      <div class="pago-grid">
-        <div class="pago-card efectivo">
-          <div class="pago-icon">💵</div><div class="stat-label">Efectivo Recibido</div>
-          <div class="caja-val" id="fin-efectivo">$0.00</div>
+
+      <!-- SEMANAL -->
+      <div id="fin-semanal">
+        <div class="card" style="border-left:3px solid var(--gold);">
+          <div class="card-title"><span class="ti">◇</span> Fin de Semana Actual
+            <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="openCajaModal()">Configurar Caja Inicial</button>
+            <button class="btn btn-primary btn-sm" style="margin-left:8px" onclick="cerrarSemana()">Cerrar Semana</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:4px;">
+            <div class="caja-item"><div class="caja-label">Caja Inicial</div><div class="caja-val" id="caja-inicial-display">$0.00</div></div>
+            <div class="caja-item" style="border-left-color:var(--success)"><div class="caja-label">Ingresos Semana</div><div class="caja-val" id="fin-ingresos-total">$0.00</div></div>
+            <div class="caja-item" style="border-left-color:var(--danger)"><div class="caja-label">Egresos Semana</div><div class="caja-val" id="fin-egresos-total">$0.00</div></div>
+            <div class="caja-item" style="border-left-color:var(--gold)"><div class="caja-label">Caja Final</div><div class="caja-val" id="caja-final-display">$0.00</div></div>
+          </div>
         </div>
-        <div class="pago-card transferencia">
-          <div class="pago-icon">📲</div><div class="stat-label">Transferencias Recibidas</div>
-          <div class="caja-val" id="fin-transferencia">$0.00</div>
+        <div class="pago-grid">
+          <div class="pago-card efectivo"><div class="pago-icon">💵</div><div class="stat-label">Efectivo esta semana</div><div class="caja-val" id="fin-efectivo">$0.00</div></div>
+          <div class="pago-card transferencia"><div class="pago-icon">📲</div><div class="stat-label">Transferencias esta semana</div><div class="caja-val" id="fin-transferencia">$0.00</div></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title"><span class="ti">◇</span> Caja Final
-          <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="openCajaModal()">Configurar Caja Inicial</button>
+
+      <!-- GLOBAL -->
+      <div id="fin-global" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;">
+          <div class="caja-item"><div class="caja-label">Ingresos Totales (Histórico)</div><div class="caja-val" id="glob-ingresos">$0.00</div></div>
+          <div class="caja-item" style="border-left-color:var(--danger)"><div class="caja-label">Egresos Totales (Histórico)</div><div class="caja-val" id="glob-egresos">$0.00</div></div>
+          <div class="caja-item" style="border-left-color:var(--gold)"><div class="caja-label">Ganancia Neta Total</div><div class="caja-val" id="glob-ganancia">$0.00</div></div>
         </div>
-        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
-          <div><div class="stat-label">Balance Final (Calculado)</div>
-          <div style="font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:500;" id="caja-final-display">$0.00</div></div>
-          <div style="font-size:12px;color:var(--warm-gray);line-height:2">Caja inicial + Ingresos − Egresos</div>
+        <div class="pago-grid">
+          <div class="pago-card efectivo"><div class="pago-icon">💵</div><div class="stat-label">Total Efectivo (Histórico)</div><div class="caja-val" id="glob-efectivo">$0.00</div></div>
+          <div class="pago-card transferencia"><div class="pago-icon">📲</div><div class="stat-label">Total Transferencias (Histórico)</div><div class="caja-val" id="glob-transferencia">$0.00</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="ti">↻</span> Historial por Semana</div>
+          <div class="table-wrap"><table><thead><tr><th>Periodo</th><th>Ingresos</th><th>Egresos</th><th>Ganancia</th></tr></thead>
+          <tbody id="semanas-hist-body"><tr><td colspan="4"><div class="empty-state"><p>Sin semanas cerradas aún</p></div></td></tr></tbody></table></div>
         </div>
       </div>
       <div class="card">
@@ -526,6 +576,58 @@ tbody td{padding:11px 13px;color:var(--espresso);}
       <div class="form-group"><label>Monto ($) *</label><input type="number" id="eg-monto" placeholder="0.00"></div>
     </div>
     <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-egreso')">Cancelar</button><button class="btn btn-danger" onclick="saveEgreso()">Registrar</button></div>
+  </div>
+</div>
+
+
+<!-- Pago Pedido Modal -->
+<div class="modal-overlay" id="modal-pago-pedido">
+  <div class="modal" style="width:400px">
+    <div class="modal-header"><span class="modal-title">Forma de Pago</span></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--warm-gray);margin-bottom:20px;">¿Cómo pagó el cliente este pedido?</p>
+      <div class="pago-select-wrap">
+        <div class="pago-opt" id="fin-opt-efectivo" onclick="selectPagoFinal('efectivo')"><div class="pago-opt-icon">💵</div>Efectivo</div>
+        <div class="pago-opt" id="fin-opt-transferencia" onclick="selectPagoFinal('transferencia')"><div class="pago-opt-icon">📲</div>Transferencia</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cancelarFinalizarPedido()">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmarPagoFinal()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Editar Pedido Modal -->
+<div class="modal-overlay" id="modal-editar-pedido">
+  <div class="modal" style="width:560px">
+    <div class="modal-header"><span class="modal-title">Editar Pedido</span><button class="modal-close" onclick="closeModal('modal-editar-pedido')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-ped-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Cliente *</label><input type="text" id="edit-ped-cliente"></div>
+        <div class="form-group"><label>Producto *</label><select id="edit-ped-producto"></select></div>
+        <div class="form-group"><label>Fecha de Entrega *</label><input type="date" id="edit-ped-fecha"></div>
+        <div class="form-group"><label>Hora de Entrega</label><input type="time" id="edit-ped-hora"></div>
+        <div class="form-group"><label>Tipo de Entrega</label><select id="edit-ped-tipo-entrega" onchange="toggleUbicacionEdit()"><option value="recoger">Pasa a recoger</option><option value="domicilio">Entrega a domicilio</option></select></div>
+        <div class="form-group" id="edit-grupo-ubicacion" style="display:none"><label>Dirección</label><input type="text" id="edit-ped-ubicacion"></div>
+        <div class="form-group"><label>Cantidad</label><input type="number" id="edit-ped-cantidad" value="1" min="1"></div>
+        <div class="form-group"><label>Precio Total ($)</label><input type="number" id="edit-ped-precio"></div>
+        <div class="form-group full"><label>Notas</label><input type="text" id="edit-ped-notas"></div>
+        <div class="form-group full">
+          <label>Forma de Pago</label>
+          <div class="pago-select-wrap" style="margin-top:6px">
+            <div class="pago-opt" id="edit-opt-efectivo" onclick="selectPagoEdit('efectivo')"><div class="pago-opt-icon">💵</div>Efectivo</div>
+            <div class="pago-opt" id="edit-opt-transferencia" onclick="selectPagoEdit('transferencia')"><div class="pago-opt-icon">📲</div>Transferencia</div>
+            <div class="pago-opt" id="edit-opt-pendiente" onclick="selectPagoEdit('pendiente')" style="flex:0.6"><div class="pago-opt-icon">⏳</div>Al entregar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-editar-pedido')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarEdicionPedido()">Guardar Cambios</button>
+    </div>
   </div>
 </div>
 
@@ -752,16 +854,17 @@ function renderVentaModal() {
           <button class="qty-btn" onclick="changeQty(${p.id},1)">+</button>
         </div>
       </div>
-      <div style="font-size:13px;font-weight:500;color:var(--gold-dark)">${ventaItems[p.id]?fmt(p.precio*ventaItems[p.id]):''}</div>
+      <div id="venta-amt-${p.id}" style="font-size:13px;font-weight:500;color:var(--gold-dark)">${ventaItems[p.id]?fmt(p.precio*ventaItems[p.id]):''}</div>
     </div>`).join('');
   updateVentaResumen();
 }
 function changeQty(id,delta) {
   const n = Math.max(0,(ventaItems[id]||0)+delta);
   if(n===0) delete ventaItems[id]; else ventaItems[id]=n;
-  document.getElementById('qty-'+id).textContent=n;
+  const qtyEl = document.getElementById('qty-'+id);
+  if(qtyEl) qtyEl.textContent=n;
   const p=state.productos.find(x=>x.id==id);
-  const amtEl=document.getElementById('qty-'+id).closest('.venta-product-item').querySelector('div:last-child');
+  const amtEl=document.getElementById('venta-amt-'+id);
   if(amtEl) amtEl.textContent = n>0?fmt(p.precio*n):'';
   updateVentaResumen();
 }
@@ -852,23 +955,132 @@ async function savePedido() {
   closeModal('modal-pedido'); renderPedidos(); refreshDashboard();
   toast('Pedido #'+num+' registrado ✓');
 }
+let pedidoFinalizandoId = null;
+let pagoFinalSeleccionado = '';
+
 async function updatePedidoStatus(id,status) {
+  const ped=state.pedidos.find(p=>p.id===id);if(!ped)return;
+  if(status==='finalizado' && ped.precio && (!ped.forma_pago || ped.forma_pago==='pendiente')) {
+    // Show pago modal instead of confirm()
+    pedidoFinalizandoId = id;
+    pagoFinalSeleccionado = '';
+    ['fin-opt-efectivo','fin-opt-transferencia'].forEach(i=>{const el=document.getElementById(i);if(el)el.className='pago-opt';});
+    openModal('modal-pago-pedido');
+    return;
+  }
+  await _finalizarPedido(id, status, ped.forma_pago||'efectivo');
+}
+
+function selectPagoFinal(tipo) {
+  pagoFinalSeleccionado = tipo;
+  ['fin-opt-efectivo','fin-opt-transferencia'].forEach(i=>{const el=document.getElementById(i);if(el)el.className='pago-opt';});
+  const el=document.getElementById('fin-opt-'+tipo);
+  if(el) el.classList.add('selected-'+tipo);
+}
+
+function cancelarFinalizarPedido() {
+  pedidoFinalizandoId=null; pagoFinalSeleccionado='';
+  closeModal('modal-pago-pedido');
+}
+
+async function confirmarPagoFinal() {
+  if(!pagoFinalSeleccionado){toast('⚠ Selecciona la forma de pago');return;}
+  closeModal('modal-pago-pedido');
+  await _finalizarPedido(pedidoFinalizandoId, 'finalizado', pagoFinalSeleccionado);
+  pedidoFinalizandoId=null; pagoFinalSeleccionado='';
+}
+
+async function _finalizarPedido(id, status, pago) {
   const ped=state.pedidos.find(p=>p.id===id);if(!ped)return;
   await db.from('pedidos').update({status}).eq('id',id);
   ped.status=status;
   if(status==='finalizado'&&ped.precio) {
     const now=new Date();
-    const pagoFinal = ped.forma_pago&&ped.forma_pago!=='pendiente' ? ped.forma_pago : (confirm('¿El pago fue en efectivo?\nAcepta = Efectivo | Cancela = Transferencia')?'efectivo':'transferencia');
-    const {data:i}=await db.from('ingresos').insert({concepto:`Pedido #${ped.num} — ${ped.cliente}`,monto:Number(ped.precio),forma_pago:pagoFinal,fecha:now.toLocaleDateString('es-MX')}).select().single();
-    state.ingresos.push(i);
-    toast('Pedido #'+ped.num+' finalizado — ingreso registrado ✓');
+    const {data:i}=await db.from('ingresos').insert({concepto:`Pedido #${ped.num} — ${ped.cliente}`,monto:Number(ped.precio),forma_pago:pago,fecha:now.toLocaleDateString('es-MX')}).select().single();
+    if(i) state.ingresos.push(i);
+    toast('Pedido #'+ped.num+' finalizado ✓');
   } else if(status==='cancelado') toast('Pedido #'+ped.num+' cancelado');
   renderPedidos(); refreshDashboard(); renderFinanzas();
 }
+let editPedidoPago = 'pendiente';
+let pedidoFiltro = 'pendiente';
+
+function switchPedidoTab(filtro) {
+  pedidoFiltro = filtro;
+  ['pendiente','finalizado','cancelado','todos'].forEach(t=>{
+    const el=document.getElementById('ped-tab-'+t);
+    if(el) el.classList.toggle('active', t===filtro);
+  });
+  renderPedidos();
+}
+
+function selectPagoEdit(tipo) {
+  editPedidoPago=tipo;
+  ['edit-opt-efectivo','edit-opt-transferencia','edit-opt-pendiente'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='pago-opt';});
+  const el=document.getElementById('edit-opt-'+tipo);
+  if(el) el.classList.add(tipo==='pendiente'?'selected-transferencia':'selected-'+tipo);
+}
+
+function toggleUbicacionEdit(){
+  document.getElementById('edit-grupo-ubicacion').style.display=document.getElementById('edit-ped-tipo-entrega').value==='domicilio'?'block':'none';
+}
+
+function abrirEditarPedido(id) {
+  const ped=state.pedidos.find(p=>p.id===id);if(!ped)return;
+  document.getElementById('edit-ped-id').value=id;
+  document.getElementById('edit-ped-cliente').value=ped.cliente||'';
+  document.getElementById('edit-ped-fecha').value=ped.fecha||'';
+  document.getElementById('edit-ped-hora').value=ped.hora||'';
+  document.getElementById('edit-ped-cantidad').value=ped.cantidad||1;
+  document.getElementById('edit-ped-precio').value=ped.precio||'';
+  document.getElementById('edit-ped-notas').value=ped.notas||'';
+  document.getElementById('edit-ped-tipo-entrega').value=ped.tipo_entrega||'recoger';
+  document.getElementById('edit-ped-ubicacion').value=ped.ubicacion||'';
+  document.getElementById('edit-grupo-ubicacion').style.display=ped.tipo_entrega==='domicilio'?'block':'none';
+  // populate products
+  const sel=document.getElementById('edit-ped-producto');
+  sel.innerHTML=state.productos.map(p=>`<option value="${p.nombre}" data-precio="${p.precio}" ${p.nombre===ped.producto?'selected':''}>${p.nombre} — ${fmt(p.precio)}</option>`).join('');
+  sel.onchange=()=>{const o=sel.options[sel.selectedIndex];if(o&&o.dataset.precio){const qty=Number(document.getElementById('edit-ped-cantidad').value)||1;document.getElementById('edit-ped-precio').value=(Number(o.dataset.precio)*qty).toFixed(2);}};
+  document.getElementById('edit-ped-cantidad').oninput=()=>{const o=sel.options[sel.selectedIndex];if(o&&o.dataset.precio){const qty=Number(document.getElementById('edit-ped-cantidad').value)||1;document.getElementById('edit-ped-precio').value=(Number(o.dataset.precio)*qty).toFixed(2);}};
+  // set pago
+  editPedidoPago=ped.forma_pago||'pendiente';
+  ['edit-opt-efectivo','edit-opt-transferencia','edit-opt-pendiente'].forEach(i=>{const el=document.getElementById(i);if(el)el.className='pago-opt';});
+  const pagoEl=document.getElementById('edit-opt-'+editPedidoPago);
+  if(pagoEl) pagoEl.classList.add(editPedidoPago==='pendiente'?'selected-transferencia':'selected-'+editPedidoPago);
+  openModal('modal-editar-pedido');
+}
+
+async function guardarEdicionPedido() {
+  const id=Number(document.getElementById('edit-ped-id').value);
+  const ped=state.pedidos.find(p=>p.id===id);if(!ped)return;
+  const updates={
+    cliente:document.getElementById('edit-ped-cliente').value.trim(),
+    producto:document.getElementById('edit-ped-producto').value,
+    fecha:document.getElementById('edit-ped-fecha').value,
+    hora:document.getElementById('edit-ped-hora').value,
+    tipo_entrega:document.getElementById('edit-ped-tipo-entrega').value,
+    ubicacion:document.getElementById('edit-ped-ubicacion').value.trim(),
+    cantidad:document.getElementById('edit-ped-cantidad').value,
+    precio:document.getElementById('edit-ped-precio').value||null,
+    notas:document.getElementById('edit-ped-notas').value.trim(),
+    forma_pago:editPedidoPago
+  };
+  await db.from('pedidos').update(updates).eq('id',id);
+  Object.assign(ped,updates);
+  closeModal('modal-editar-pedido');
+  renderPedidos(); refreshDashboard();
+  toast('Pedido #'+ped.num+' actualizado ✓');
+}
+
 function renderPedidos() {
   const list=document.getElementById('pedidos-list');
-  if(state.pedidos.length===0){list.innerHTML='<div class="empty-state"><div class="es-icon">◎</div><p>Sin pedidos registrados</p></div>';return;}
-  const sorted=[...state.pedidos].sort((a,b)=>({pendiente:0,finalizado:1,cancelado:2}[a.status]||0)-({pendiente:0,finalizado:1,cancelado:2}[b.status]||0));
+  const filtrados2check = pedidoFiltro==='todos' ? state.pedidos : state.pedidos.filter(p=>p.status===pedidoFiltro);
+  if(filtrados2check.length===0){
+    const msgs={'pendiente':'Sin pedidos pendientes','finalizado':'Sin pedidos finalizados','cancelado':'Sin pedidos cancelados','todos':'Sin pedidos registrados'};
+    list.innerHTML=`<div class="empty-state"><div class="es-icon">◎</div><p>${msgs[pedidoFiltro]||'Sin pedidos'}</p></div>`;return;
+  }
+  const filtrados = pedidoFiltro==='todos' ? state.pedidos : state.pedidos.filter(p=>p.status===pedidoFiltro);
+  const sorted=[...filtrados].sort((a,b)=>({pendiente:0,finalizado:1,cancelado:2}[a.status]||0)-({pendiente:0,finalizado:1,cancelado:2}[b.status]||0));
   list.innerHTML=sorted.map(p=>`
     <div class="pedido-card ${p.status!=='pendiente'?p.status:''}">
       <div class="pedido-num">#${String(p.num).padStart(2,'0')}</div>
@@ -884,6 +1096,7 @@ function renderPedidos() {
       </div>
       <div class="pedido-actions">
         <span class="badge ${p.status==='pendiente'?'badge-warn':p.status==='finalizado'?'badge-success':'badge-danger'}">${p.status==='pendiente'?'Pendiente':p.status==='finalizado'?'Finalizado':'Cancelado'}</span>
+        <button class="btn btn-outline btn-sm" onclick="abrirEditarPedido(${p.id})" style="font-size:9px">✎ Editar</button>
         ${p.status==='pendiente'?`
           <button class="btn btn-success btn-sm" onclick="updatePedidoStatus(${p.id},'finalizado')">✓ Finalizado</button>
           <button class="btn btn-danger btn-sm" onclick="updatePedidoStatus(${p.id},'cancelado')">✕ Cancelar</button>`:''}
@@ -892,11 +1105,87 @@ function renderPedidos() {
 }
 
 // ── FINANZAS ──
+function switchFinTab(tab) {
+  document.getElementById('fin-semanal').style.display = tab==='semanal'?'block':'none';
+  document.getElementById('fin-global').style.display = tab==='global'?'block':'none';
+  document.getElementById('tab-semanal').classList.toggle('active', tab==='semanal');
+  document.getElementById('tab-global').classList.toggle('active', tab==='global');
+  if(tab==='global') renderGlobal();
+}
+
+function getSemanaActual() {
+  // ingresos/egresos from current weekend (Friday-Sunday)
+  const now = new Date();
+  const day = now.getDay(); // 0=dom,1=lun,...,5=vie,6=sab
+  // find most recent friday
+  const daysToFri = day >= 5 ? day - 5 : day + 2;
+  const fri = new Date(now);
+  fri.setDate(now.getDate() - daysToFri);
+  fri.setHours(0,0,0,0);
+  const sun = new Date(fri);
+  sun.setDate(fri.getDate() + 2);
+  sun.setHours(23,59,59,999);
+  return { start: fri, end: sun };
+}
+
+function isEnSemanaActual(fechaStr) {
+  // fechaStr like "20/6/2026"
+  if(!fechaStr) return false;
+  const parts = fechaStr.split('/');
+  if(parts.length < 3) return false;
+  const d = new Date(Number(parts[2]), Number(parts[1])-1, Number(parts[0]));
+  const {start, end} = getSemanaActual();
+  return d >= start && d <= end;
+}
+
 function openCajaModal(){document.getElementById('caja-inicial-input').value=state.cajaInicial||'';openModal('modal-caja');}
+
 async function saveCaja() {
   const val=Number(document.getElementById('caja-inicial-input').value)||0;
   await db.from('config').upsert({key:'caja_inicial',value:String(val)},{onConflict:'key'});
   state.cajaInicial=val; closeModal('modal-caja'); renderFinanzas(); refreshDashboard(); toast('Caja configurada ✓');
+}
+
+async function cerrarSemana() {
+  if(!confirm('¿Cerrar esta semana y comenzar una nueva? La caja inicial se reiniciará a $0.')) return;
+  const {start,end} = getSemanaActual();
+  const ingSem = state.ingresos.filter(i=>isEnSemanaActual(i.fecha));
+  const egSem = state.egresos.filter(e=>isEnSemanaActual(e.fecha));
+  const totalIng = ingSem.reduce((s,i)=>s+Number(i.monto),0);
+  const totalEg = egSem.reduce((s,e)=>s+Number(e.monto),0);
+  const periodo = start.toLocaleDateString('es-MX',{day:'numeric',month:'short'}) + ' – ' + end.toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});
+  // Save semana to config
+  const semanas = JSON.parse((await db.from('config').select('value').eq('key','semanas_hist').single()).data?.value || '[]');
+  semanas.push({periodo, ingresos:totalIng, egresos:totalEg, ganancia:totalIng-totalEg, fecha:new Date().toISOString()});
+  await db.from('config').upsert({key:'semanas_hist',value:JSON.stringify(semanas)},{onConflict:'key'});
+  // Reset caja
+  await db.from('config').upsert({key:'caja_inicial',value:'0'},{onConflict:'key'});
+  state.cajaInicial=0;
+  renderFinanzas(); refreshDashboard();
+  toast('Semana cerrada ✓ — nueva caja iniciada');
+}
+
+async function renderGlobal() {
+  const totIng = state.ingresos.reduce((s,i)=>s+Number(i.monto),0);
+  const totEg = state.egresos.reduce((s,i)=>s+Number(i.monto),0);
+  const totEfe = state.ingresos.filter(i=>i.forma_pago==='efectivo').reduce((s,i)=>s+Number(i.monto),0);
+  const totTrf = state.ingresos.filter(i=>i.forma_pago==='transferencia').reduce((s,i)=>s+Number(i.monto),0);
+  document.getElementById('glob-ingresos').textContent=fmt(totIng);
+  document.getElementById('glob-egresos').textContent=fmt(totEg);
+  document.getElementById('glob-ganancia').textContent=fmt(totIng-totEg);
+  document.getElementById('glob-efectivo').textContent=fmt(totEfe);
+  document.getElementById('glob-transferencia').textContent=fmt(totTrf);
+  // Load semanas hist
+  const res = await db.from('config').select('value').eq('key','semanas_hist').single();
+  const semanas = JSON.parse(res.data?.value||'[]');
+  const tbody = document.getElementById('semanas-hist-body');
+  if(semanas.length===0){tbody.innerHTML='<tr><td colspan="4"><div class="empty-state"><p>Sin semanas cerradas aún</p></div></td></tr>';return;}
+  tbody.innerHTML=[...semanas].reverse().map(s=>`<tr>
+    <td>${s.periodo}</td>
+    <td class="amount-income">${fmt(s.ingresos)}</td>
+    <td class="amount-expense">${fmt(s.egresos)}</td>
+    <td style="font-weight:500;color:var(--gold-dark)">${fmt(s.ganancia)}</td>
+  </tr>`).join('');
 }
 let ingresoPagoSel='efectivo';
 function selectPagoIngreso(tipo){
@@ -947,7 +1236,14 @@ async function deleteEgreso(id) {
   renderFinanzas(); refreshDashboard(); toast('Egreso eliminado');
 }
 function renderFinanzas() {
-  const {totalIngresos,totalEgresos,efectivo,transferencia,caja}=calcTotals();
+  // Weekly filter
+  const ingSem = state.ingresos.filter(i=>isEnSemanaActual(i.fecha));
+  const egSem = state.egresos.filter(e=>isEnSemanaActual(e.fecha));
+  const totalIngresos = ingSem.reduce((s,i)=>s+Number(i.monto),0);
+  const totalEgresos = egSem.reduce((s,e)=>s+Number(e.monto),0);
+  const efectivo = ingSem.filter(i=>i.forma_pago==='efectivo').reduce((s,i)=>s+Number(i.monto),0);
+  const transferencia = ingSem.filter(i=>i.forma_pago==='transferencia').reduce((s,i)=>s+Number(i.monto),0);
+  const caja = state.cajaInicial + totalIngresos - totalEgresos;
   document.getElementById('caja-inicial-display').textContent=fmt(state.cajaInicial);
   document.getElementById('fin-ingresos-total').textContent=fmt(totalIngresos);
   document.getElementById('fin-egresos-total').textContent=fmt(totalEgresos);
@@ -995,6 +1291,91 @@ async function deleteCompra(id) {
   state.compras=state.compras.filter(c=>c.id!==id);
   renderCompras();
 }
+function resumenHoy() {
+  const today = new Date().toLocaleDateString('es-MX');
+  // convert to yyyy-mm-dd for input
+  const parts = today.split('/');
+  const iso = `${parts[2]}-${String(parts[1]).padStart(2,'0')}-${String(parts[0]).padStart(2,'0')}`;
+  document.getElementById('rpt-fecha-ini').value = iso;
+  document.getElementById('rpt-fecha-fin').value = iso;
+  generarResumen();
+}
+
+function resumenEstaSemana() {
+  const {start,end} = getSemanaActual();
+  const toIso = d => d.toISOString().split('T')[0];
+  document.getElementById('rpt-fecha-ini').value = toIso(start);
+  document.getElementById('rpt-fecha-fin').value = toIso(end);
+  generarResumen();
+}
+
+function generarResumen() {
+  const iniStr = document.getElementById('rpt-fecha-ini').value;
+  const finStr = document.getElementById('rpt-fecha-fin').value;
+  if(!iniStr||!finStr){toast('⚠ Selecciona ambas fechas');return;}
+  const ini = new Date(iniStr+'T00:00:00');
+  const fin = new Date(finStr+'T23:59:59');
+
+  function parseFecha(f) {
+    if(!f) return null;
+    // format: d/m/yyyy or d/m/yyyy hh:mm
+    const base = f.split(' ')[0];
+    const p = base.split('/');
+    if(p.length<3) return null;
+    return new Date(Number(p[2]), Number(p[1])-1, Number(p[0]));
+  }
+
+  const ventasFiltradas = state.ventas.filter(v=>{
+    const d = parseFecha(v.fecha);
+    return d && d >= ini && d <= fin;
+  });
+  const ingresosFiltrados = state.ingresos.filter(i=>{
+    const d = parseFecha(i.fecha);
+    return d && d >= ini && d <= fin;
+  });
+
+  const total = ingresosFiltrados.reduce((s,i)=>s+Number(i.monto),0);
+  const efectivo = ingresosFiltrados.filter(i=>i.forma_pago==='efectivo').reduce((s,i)=>s+Number(i.monto),0);
+  const transferencia = ingresosFiltrados.filter(i=>i.forma_pago==='transferencia').reduce((s,i)=>s+Number(i.monto),0);
+
+  document.getElementById('rpt-total').textContent=fmt(total);
+  document.getElementById('rpt-efectivo').textContent=fmt(efectivo);
+  document.getElementById('rpt-transferencia').textContent=fmt(transferencia);
+  document.getElementById('rpt-num-ventas').textContent=ventasFiltradas.length;
+  document.getElementById('rpt-resultado').style.display='block';
+
+  // Product ranking
+  const conteo = {};
+  ventasFiltradas.forEach(v=>{
+    // parse concepto: "PROD ×N, PROD2 ×M"
+    v.concepto.split(',').forEach(part=>{
+      const m = part.trim().match(/^(.+)\s×(\d+)$/);
+      if(m){
+        const name=m[1].trim(); const qty=Number(m[2]);
+        conteo[name]=(conteo[name]||0)+qty;
+      } else {
+        const name=part.trim();
+        if(name) conteo[name]=(conteo[name]||0)+1;
+      }
+    });
+  });
+  const sorted = Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
+  const rank = document.getElementById('rpt-productos-ranking');
+  if(sorted.length===0){rank.innerHTML='<div class="empty-state"><p>Sin ventas en este período</p></div>';return;}
+  const max = sorted[0][1];
+  rank.innerHTML = sorted.map(([name,qty],i)=>`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <div style="font-size:11px;letter-spacing:0.08em;color:var(--warm-gray);min-width:20px;">${i+1}º</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;margin-bottom:4px;">${name}</div>
+        <div style="height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${(qty/max*100).toFixed(0)}%;background:var(--gold);border-radius:3px;transition:width .4s;"></div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--espresso);min-width:40px;text-align:right;">${qty} uds</div>
+    </div>`).join('');
+}
+
 function renderCompras() {
   const list=document.getElementById('compras-list');
   list.innerHTML=state.compras.length===0?'<div class="empty-state"><div class="es-icon">☰</div><p>Lista vacía</p></div>':
