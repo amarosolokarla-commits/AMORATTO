@@ -43,6 +43,8 @@ body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--espresso)
 .nav-section-title{font-size:8px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(196,169,109,0.4);padding:0 22px 8px;}
 .nav-item{display:flex;align-items:center;gap:11px;padding:10px 22px;cursor:pointer;transition:background .15s;color:rgba(245,239,228,0.62);font-size:12.5px;letter-spacing:0.03em;position:relative;}
 .nav-item:hover{background:rgba(196,169,109,0.08);color:var(--cream);}
+.nav-label{display:inline;}
+@media(max-width:768px){.nav-label{font-size:9px;display:block;}}
 .nav-item.active{background:rgba(196,169,109,0.13);color:var(--gold-light);}
 .nav-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);}
 .sidebar-bottom{margin-top:auto;padding:16px 22px;border-top:1px solid rgba(196,169,109,0.15);}
@@ -215,6 +217,55 @@ tbody td{padding:11px 13px;color:var(--espresso);}
 .fin-tab{background:none;border:none;padding:10px 24px;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;}
 .fin-tab.active{color:var(--espresso);border-bottom-color:var(--gold);}
 .fin-tab:hover{color:var(--espresso);}
+
+/* ── RESPONSIVE ── */
+@media (max-width:768px){
+  .sidebar{width:100%;min-height:auto;position:fixed;bottom:0;top:auto;left:0;right:0;flex-direction:row;z-index:100;padding:0;border-top:1px solid rgba(196,169,109,0.2);}
+  .sidebar-logo{display:none;}
+  .sidebar-bottom{display:none;}
+  .nav-section{display:flex;flex-direction:row;padding:0;width:100%;justify-content:space-around;}
+  .nav-section-title{display:none;}
+  .nav-item{flex-direction:column;gap:3px;padding:8px 4px;font-size:9px;letter-spacing:0.06em;min-width:0;flex:1;justify-content:center;border-left:none !important;}
+  .nav-item.active::before{display:none;}
+  .nav-item.active{border-top:2px solid var(--gold);background:rgba(196,169,109,0.1);}
+  .nav-icon{font-size:18px;}
+  .main{margin-left:0;padding-bottom:70px;}
+  .topbar{padding:0 16px;height:52px;}
+  .topbar-date{display:none;}
+  .page-content{padding:16px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .pago-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .quick-actions{grid-template-columns:repeat(3,1fr);gap:8px;}
+  .quick-btn{padding:14px 8px;}
+  .quick-btn-icon{font-size:20px;}
+  .form-grid{grid-template-columns:1fr;}
+  .form-group.full{grid-column:1;}
+  .caja-grid{grid-template-columns:1fr 1fr;}
+  .modal{width:95vw !important;max-width:95vw;margin:10px;}
+  .modal-body{padding:18px 16px;}
+  .modal-header{padding:16px 16px 14px;}
+  .modal-footer{padding:12px 16px 18px;}
+  .pago-select-wrap{gap:6px;}
+  .pago-opt{padding:10px 6px;font-size:11px;}
+  .pedido-card{flex-wrap:wrap;}
+  .pedido-actions{flex-direction:row;flex-wrap:wrap;width:100%;margin-top:10px;}
+  .btn-sm{padding:6px 10px;}
+  table{font-size:12px;}
+  thead th{padding:8px 8px;}
+  tbody td{padding:9px 8px;}
+  .card{padding:18px 16px;}
+  .fin-tab{padding:8px 12px;font-size:10px;}
+  .stat-value{font-size:22px;}
+  .caja-val{font-size:20px;}
+  #app{flex-direction:column;}
+}
+
+@media (min-width:769px){
+  html,body{height:100%;}
+  #app{height:100vh;overflow:hidden;}
+  .main{overflow-y:auto;height:100vh;}
+  .sidebar{height:100vh;overflow-y:auto;}
+}
 </style>
 </head>
 <body>
@@ -258,15 +309,15 @@ tbody td{padding:11px 13px;color:var(--espresso);}
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Principal</div>
-      <div class="nav-item active" onclick="goTo('dashboard')"><span>◈</span> Dashboard</div>
-      <div class="nav-item" onclick="openVentaModal()"><span>✦</span> Registrar Venta</div>
+      <div class="nav-item active" onclick="goTo('dashboard')"><span class="nav-icon">◈</span><span class="nav-label">Dashboard</span></div>
+      <div class="nav-item" onclick="openVentaModal()"><span class="nav-icon">✦</span><span class="nav-label">Venta</span></div>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Negocio</div>
-      <div class="nav-item" onclick="goTo('productos')"><span>❐</span> Productos</div>
-      <div class="nav-item" onclick="goTo('pedidos')"><span>◎</span> Pedidos</div>
-      <div class="nav-item" onclick="goTo('finanzas')"><span>◇</span> Finanzas</div>
-      <div class="nav-item" onclick="goTo('compras')"><span>☰</span> Lista de Compras</div>
+      <div class="nav-item" onclick="goTo('productos')"><span class="nav-icon">❐</span><span class="nav-label">Productos</span></div>
+      <div class="nav-item" onclick="goTo('pedidos')"><span class="nav-icon">◎</span><span class="nav-label">Pedidos</span></div>
+      <div class="nav-item" onclick="goTo('finanzas')"><span class="nav-icon">◇</span><span class="nav-label">Finanzas</span></div>
+      <div class="nav-item" onclick="goTo('compras')"><span class="nav-icon">☰</span><span class="nav-label">Compras</span></div>
     </div>
     <div class="sidebar-bottom">
       <div class="logout-btn" onclick="doLogout()"><span>⟵</span> Cerrar sesión</div>
@@ -513,26 +564,33 @@ tbody td{padding:11px 13px;color:var(--espresso);}
 
 <!-- Pedido -->
 <div class="modal-overlay" id="modal-pedido">
-  <div class="modal" style="width:560px">
+  <div class="modal" style="width:600px">
     <div class="modal-header"><span class="modal-title">Nuevo Pedido</span><button class="modal-close" onclick="closeModal('modal-pedido')">×</button></div>
     <div class="modal-body">
-      <div class="form-grid">
+      <div class="form-grid" style="margin-bottom:18px">
         <div class="form-group"><label>Cliente *</label><input type="text" id="ped-cliente" placeholder="Nombre completo"></div>
-        <div class="form-group"><label>Producto *</label><select id="ped-producto"><option value="">Seleccionar...</option></select></div>
         <div class="form-group"><label>Fecha de Entrega *</label><input type="date" id="ped-fecha"></div>
         <div class="form-group"><label>Hora de Entrega</label><input type="time" id="ped-hora"></div>
         <div class="form-group"><label>Tipo de Entrega</label><select id="ped-tipo-entrega" onchange="toggleUbicacion()"><option value="recoger">Pasa a recoger</option><option value="domicilio">Entrega a domicilio</option></select></div>
-        <div class="form-group" id="grupo-ubicacion" style="display:none"><label>Dirección</label><input type="text" id="ped-ubicacion" placeholder="Dirección de entrega"></div>
-        <div class="form-group"><label>Cantidad</label><input type="number" id="ped-cantidad" value="1" min="1"></div>
-        <div class="form-group"><label>Precio Total ($)</label><input type="number" id="ped-precio" placeholder="0.00"></div>
+        <div class="form-group full" id="grupo-ubicacion" style="display:none"><label>Dirección</label><input type="text" id="ped-ubicacion" placeholder="Dirección de entrega"></div>
         <div class="form-group full"><label>Notas</label><input type="text" id="ped-notas" placeholder="Ej. Sin azúcar, dedicatoria..."></div>
-        <div class="form-group full">
-          <label>Forma de Pago del Anticipo / Pedido</label>
-          <div class="pago-select-wrap" style="margin-top:6px">
-            <div class="pago-opt" id="ped-opt-efectivo" onclick="selectPagoPedido('efectivo')"><div class="pago-opt-icon">💵</div>Efectivo</div>
-            <div class="pago-opt" id="ped-opt-transferencia" onclick="selectPagoPedido('transferencia')"><div class="pago-opt-icon">📲</div>Transferencia</div>
-            <div class="pago-opt" id="ped-opt-pendiente" onclick="selectPagoPedido('pendiente')" style="flex:0.6"><div class="pago-opt-icon">⏳</div>Al entregar</div>
-          </div>
+      </div>
+      <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:10px;">Productos del Pedido</div>
+      <div id="ped-products-list"></div>
+      <div id="ped-resumen" style="display:none">
+        <div class="resumen-venta" style="margin-top:14px">
+          <div style="font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:10px;">Resumen del Pedido</div>
+          <div id="ped-items-summary"></div>
+          <hr class="divider" style="margin:10px 0">
+          <div class="rv-row"><span style="font-size:10px;letter-spacing:0.13em;text-transform:uppercase;color:var(--warm-gray)">Total</span><span class="rv-total" id="ped-total-display">$0.00</span></div>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:10px;">Forma de Pago</div>
+        <div class="pago-select-wrap">
+          <div class="pago-opt" id="ped-opt-efectivo" onclick="selectPagoPedido('efectivo')"><div class="pago-opt-icon">💵</div>Efectivo</div>
+          <div class="pago-opt" id="ped-opt-transferencia" onclick="selectPagoPedido('transferencia')"><div class="pago-opt-icon">📲</div>Transferencia</div>
+          <div class="pago-opt" id="ped-opt-pendiente" onclick="selectPagoPedido('pendiente')" style="flex:0.6"><div class="pago-opt-icon">⏳</div>Al entregar</div>
         </div>
       </div>
     </div>
@@ -915,29 +973,75 @@ function renderVentasHist() {
 }
 
 // ── PEDIDOS ──
+let pedidoItems = {}; // {productoId: qty}
+
 function openPedidoModal() {
   ['ped-cliente','ped-ubicacion','ped-notas'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('ped-cantidad').value='1';
-  document.getElementById('ped-precio').value='';
   document.getElementById('ped-fecha').value='';
   document.getElementById('ped-hora').value='';
   document.getElementById('ped-tipo-entrega').value='recoger';
   document.getElementById('grupo-ubicacion').style.display='none';
-  const sel=document.getElementById('ped-producto');
-  sel.innerHTML='<option value="">Seleccionar...</option>'+state.productos.map(p=>`<option value="${p.nombre}" data-precio="${p.precio}">${p.nombre} — ${fmt(p.precio)}</option>`).join('');
-  sel.onchange=()=>{const o=sel.options[sel.selectedIndex];if(o&&o.dataset.precio){const qty=Number(document.getElementById('ped-cantidad').value)||1;document.getElementById('ped-precio').value=(Number(o.dataset.precio)*qty).toFixed(2);}};
-  document.getElementById('ped-cantidad').oninput=()=>{const o=sel.options[sel.selectedIndex];if(o&&o.dataset.precio){const qty=Number(document.getElementById('ped-cantidad').value)||1;document.getElementById('ped-precio').value=(Number(o.dataset.precio)*qty).toFixed(2);}};
-  // reset pago pedido
+  pedidoItems={};
   pedidoPago='';
   ['ped-opt-efectivo','ped-opt-transferencia','ped-opt-pendiente'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='pago-opt';});
+  renderPedidoProducts();
   openModal('modal-pedido');
+}
+
+function renderPedidoProducts() {
+  const list=document.getElementById('ped-products-list');
+  if(!list) return;
+  list.innerHTML = state.productos.map(p=>`
+    <div class="venta-product-item">
+      <div>${p.foto?`<img src="${p.foto}" style="width:38px;height:38px;object-fit:cover;border-radius:2px">`:"🎂"}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500">${p.nombre}</div>
+        <div style="font-size:12px;color:var(--warm-gray)">${fmt(p.precio)}</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changePedQty(${p.id},-1)">−</button>
+          <span class="qty-val" id="pedqty-${p.id}">${pedidoItems[p.id]||0}</span>
+          <button class="qty-btn" onclick="changePedQty(${p.id},1)">+</button>
+        </div>
+      </div>
+      <div id="pedamt-${p.id}" style="font-size:13px;font-weight:500;color:var(--gold-dark)">${pedidoItems[p.id]?fmt(p.precio*pedidoItems[p.id]):''}</div>
+    </div>`).join('');
+  updatePedidoResumen();
+}
+
+function changePedQty(id,delta) {
+  const n=Math.max(0,(pedidoItems[id]||0)+delta);
+  if(n===0) delete pedidoItems[id]; else pedidoItems[id]=n;
+  const el=document.getElementById('pedqty-'+id);
+  if(el) el.textContent=n;
+  const p=state.productos.find(x=>x.id==id);
+  const amt=document.getElementById('pedamt-'+id);
+  if(amt) amt.textContent=n>0?fmt(p.precio*n):'';
+  updatePedidoResumen();
+}
+
+function updatePedidoResumen() {
+  const ids=Object.keys(pedidoItems);
+  const res=document.getElementById('ped-resumen');
+  if(!res) return;
+  if(ids.length===0){res.style.display='none';return;}
+  res.style.display='block';
+  let total=0;
+  const lines=ids.map(id=>{const p=state.productos.find(x=>x.id==id);const sub=p.precio*pedidoItems[id];total+=sub;return `<div class="rv-row"><span>${p.nombre} ×${pedidoItems[id]}</span><span>${fmt(sub)}</span></div>`;});
+  document.getElementById('ped-items-summary').innerHTML=lines.join('');
+  document.getElementById('ped-total-display').textContent=fmt(total);
 }
 function toggleUbicacion(){document.getElementById('grupo-ubicacion').style.display=document.getElementById('ped-tipo-entrega').value==='domicilio'?'block':'none';}
 async function savePedido() {
   const cliente=document.getElementById('ped-cliente').value.trim();
-  const producto=document.getElementById('ped-producto').value;
   const fecha=document.getElementById('ped-fecha').value;
-  if(!cliente||!producto||!fecha){toast('⚠ Completa los campos requeridos');return;}
+  if(!cliente||!fecha){toast('⚠ Completa cliente y fecha');return;}
+  const ids=Object.keys(pedidoItems);
+  if(ids.length===0){toast('⚠ Agrega al menos un producto');return;}
+  // Build producto string and total
+  const parts=ids.map(id=>{const p=state.productos.find(x=>x.id==id);return p.nombre+(pedidoItems[id]>1?' ×'+pedidoItems[id]:'');});
+  const producto=parts.join(', ');
+  const cantidad=ids.reduce((s,id)=>s+pedidoItems[id],0);
+  const precio=ids.reduce((s,id)=>{const p=state.productos.find(x=>x.id==id);return s+p.precio*pedidoItems[id];},0);
   const num=state.pedidoCounter++;
   showLoading('Guardando pedido...');
   const {data,error}=await db.from('pedidos').insert({
@@ -945,8 +1049,7 @@ async function savePedido() {
     tipo_entrega:document.getElementById('ped-tipo-entrega').value,
     forma_pago:pedidoPago||'pendiente',
     ubicacion:document.getElementById('ped-ubicacion').value.trim(),
-    cantidad:document.getElementById('ped-cantidad').value,
-    precio:document.getElementById('ped-precio').value||null,
+    cantidad,precio,
     notas:document.getElementById('ped-notas').value.trim(),status:'pendiente'
   }).select().single();
   hideLoading();
