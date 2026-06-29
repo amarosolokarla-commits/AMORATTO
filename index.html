@@ -403,7 +403,7 @@ tbody td{padding:11px 13px;color:var(--espresso);}
     <div id="page-ventas" class="page-content">
       <div class="card">
         <div class="card-title"><span class="ti">✦</span> Historial de Ventas</div>
-        <div class="table-wrap"><table><thead><tr><th>Producto(s)</th><th>Cantidad</th><th>Forma de Pago</th><th>Monto</th><th>Fecha/Hora</th></tr></thead><tbody id="ventas-hist-body"><tr><td colspan="5"><div class="empty-state"><p>Sin ventas registradas</p></div></td></tr></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Producto(s)</th><th>Cant.</th><th>Zona</th><th>Forma de Pago</th><th>Monto</th><th>Fecha/Hora</th></tr></thead><tbody id="ventas-hist-body"><tr><td colspan="5"><div class="empty-state"><p>Sin ventas registradas</p></div></td></tr></tbody></table></div>
       </div>
     </div>
 
@@ -422,7 +422,11 @@ tbody td{padding:11px 13px;color:var(--espresso);}
         <!-- RESUMEN DE PRODUCCIÓN -->
         <div id="produccion-resumen" style="background:var(--cream);border-radius:4px;padding:16px 20px;margin-bottom:18px;border-left:3px solid var(--gold);display:none">
           <div style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:12px;">📋 Lo que debes surtir (pedidos pendientes)</div>
-          <div id="produccion-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;"></div>
+          <div id="produccion-lista" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px;"></div>
+          <div id="produccion-zonas" style="display:none;margin-top:10px;border-top:1px solid var(--cream-dark);padding-top:12px;">
+            <div style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:10px;">📍 Por Zona</div>
+            <div id="produccion-zonas-lista" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+          </div>
         </div>
         <div id="pedidos-list"><div class="empty-state"><div class="es-icon">◎</div><p>Sin pedidos registrados</p></div></div>
       </div>
@@ -431,48 +435,29 @@ tbody td{padding:11px 13px;color:var(--espresso);}
     <!-- FINANZAS -->
     <div id="page-finanzas" class="page-content">
 
-      <!-- TABS -->
-      <div style="display:flex;gap:0;margin-bottom:22px;border-bottom:2px solid var(--cream-dark);">
-        <button class="fin-tab active" id="tab-semanal" onclick="switchFinTab('semanal')">Esta Semana</button>
-        <button class="fin-tab" id="tab-global" onclick="switchFinTab('global')">Balance Global</button>
-      </div>
-
-      <!-- SEMANAL -->
-      <div id="fin-semanal">
-        <div class="card" style="border-left:3px solid var(--gold);">
-          <div class="card-title"><span class="ti">◇</span> Fin de Semana Actual
-            <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="openCajaModal()">Configurar Caja Inicial</button>
-            <button class="btn btn-primary btn-sm" style="margin-left:8px" onclick="cerrarSemana()">Cerrar Semana</button>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:4px;">
-            <div class="caja-item"><div class="caja-label">Caja Inicial</div><div class="caja-val" id="caja-inicial-display">$0.00</div></div>
-            <div class="caja-item" style="border-left-color:var(--success)"><div class="caja-label">Ingresos Semana</div><div class="caja-val" id="fin-ingresos-total">$0.00</div></div>
-            <div class="caja-item" style="border-left-color:var(--danger)"><div class="caja-label">Egresos Semana</div><div class="caja-val" id="fin-egresos-total">$0.00</div></div>
-            <div class="caja-item" style="border-left-color:var(--gold)"><div class="caja-label">Ganancia Neta</div><div class="caja-val" id="caja-final-display">$0.00</div></div>
-          </div>
-        </div>
-        <div class="pago-grid">
-          <div class="pago-card efectivo"><div class="pago-icon">💵</div><div class="stat-label">Efectivo esta semana</div><div class="caja-val" id="fin-efectivo">$0.00</div></div>
-          <div class="pago-card transferencia"><div class="pago-icon">📲</div><div class="stat-label">Transferencias esta semana</div><div class="caja-val" id="fin-transferencia">$0.00</div></div>
+      <!-- FILTRO POR FECHA -->
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-title"><span class="ti">◈</span> Filtrar por Fecha</div>
+        <div class="form-row" style="align-items:flex-end;flex-wrap:wrap;gap:10px;">
+          <div class="form-group"><label>Desde</label><input type="date" id="fin-fecha-ini"></div>
+          <div class="form-group"><label>Hasta</label><input type="date" id="fin-fecha-fin"></div>
+          <button class="btn btn-primary" onclick="filtrarFinanzas()">Buscar</button>
+          <button class="btn btn-outline" onclick="finanzasHoy()">Hoy</button>
+          <button class="btn btn-outline" onclick="finanzasEstaSemana()">Esta semana</button>
+          <button class="btn btn-outline" onclick="finanzasTodo()">Todo</button>
         </div>
       </div>
 
-      <!-- GLOBAL -->
-      <div id="fin-global" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;">
-          <div class="caja-item"><div class="caja-label">Ingresos Totales (Histórico)</div><div class="caja-val" id="glob-ingresos">$0.00</div></div>
-          <div class="caja-item" style="border-left-color:var(--danger)"><div class="caja-label">Egresos Totales (Histórico)</div><div class="caja-val" id="glob-egresos">$0.00</div></div>
-          <div class="caja-item" style="border-left-color:var(--gold)"><div class="caja-label">Ganancia Neta Total</div><div class="caja-val" id="glob-ganancia">$0.00</div></div>
-        </div>
-        <div class="pago-grid">
-          <div class="pago-card efectivo"><div class="pago-icon">💵</div><div class="stat-label">Total Efectivo (Histórico)</div><div class="caja-val" id="glob-efectivo">$0.00</div></div>
-          <div class="pago-card transferencia"><div class="pago-icon">📲</div><div class="stat-label">Total Transferencias (Histórico)</div><div class="caja-val" id="glob-transferencia">$0.00</div></div>
-        </div>
-        <div class="card">
-          <div class="card-title"><span class="ti">↻</span> Historial por Semana</div>
-          <div class="table-wrap"><table><thead><tr><th>Periodo</th><th>Ingresos</th><th>Egresos</th><th>Ganancia</th></tr></thead>
-          <tbody id="semanas-hist-body"><tr><td colspan="4"><div class="empty-state"><p>Sin semanas cerradas aún</p></div></td></tr></tbody></table></div>
-        </div>
+      <!-- RESUMEN FILTRADO -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+        <div class="caja-item" style="border-left-color:var(--success)"><div class="caja-label">Ingresos</div><div class="caja-val" id="fin-ingresos-total">$0.00</div></div>
+        <div class="caja-item" style="border-left-color:var(--danger)"><div class="caja-label">Egresos</div><div class="caja-val" id="fin-egresos-total">$0.00</div></div>
+        <div class="caja-item" style="border-left-color:var(--gold)"><div class="caja-label">Ganancia Neta</div><div class="caja-val" id="caja-final-display">$0.00</div></div>
+        <div class="caja-item"><div class="caja-label">Periodo</div><div style="font-size:12px;color:var(--warm-gray);margin-top:4px" id="fin-periodo-label">Todo el historial</div></div>
+      </div>
+      <div class="pago-grid" style="margin-bottom:16px;">
+        <div class="pago-card efectivo"><div class="pago-icon">💵</div><div class="stat-label">Efectivo</div><div class="caja-val" id="fin-efectivo">$0.00</div></div>
+        <div class="pago-card transferencia"><div class="pago-icon">📲</div><div class="stat-label">Transferencias</div><div class="caja-val" id="fin-transferencia">$0.00</div></div>
       </div>
       <div class="card">
         <div class="card-title"><span class="ti">↑</span> Ingresos
@@ -565,6 +550,18 @@ tbody td{padding:11px 13px;color:var(--espresso);}
             <div class="pago-opt" id="opt-transferencia" onclick="selectPago('transferencia')"><div class="pago-opt-icon">📲</div>Transferencia</div>
           </div>
         </div>
+        <div style="margin-top:14px;">
+          <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:10px;">Zona de Venta</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div class="pago-opt" id="venta-zona-xalapa" onclick="selectVentaZona('XALAPA')" style="flex:none;padding:8px 16px">📍 Xalapa</div>
+            <div class="pago-opt" id="venta-zona-san-marcos" onclick="selectVentaZona('SAN MARCOS')" style="flex:none;padding:8px 16px">📍 San Marcos</div>
+            <div class="pago-opt" id="venta-zona-coatepec" onclick="selectVentaZona('COATEPEC')" style="flex:none;padding:8px 16px">📍 Coatepec</div>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:14px;">
+          <div class="form-group"><label>Nombre del Comprador (opcional)</label><input type="text" id="venta-comprador" placeholder="Ej. María López"></div>
+          <div class="form-group"><label>Fecha de Venta</label><input type="date" id="venta-fecha"></div>
+        </div>
       </div>
     </div>
     <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-venta')">Cancelar</button><button class="btn btn-gold" onclick="confirmarVenta()">✦ Confirmar Venta</button></div>
@@ -583,6 +580,14 @@ tbody td{padding:11px 13px;color:var(--espresso);}
         <div class="form-group"><label>Tipo de Entrega</label><select id="ped-tipo-entrega" onchange="toggleUbicacion()"><option value="recoger">Pasa a recoger</option><option value="domicilio">Entrega a domicilio</option></select></div>
         <div class="form-group full" id="grupo-ubicacion" style="display:none"><label>Dirección</label><input type="text" id="ped-ubicacion" placeholder="Dirección de entrega"></div>
         <div class="form-group full"><label>Notas</label><input type="text" id="ped-notas" placeholder="Ej. Sin azúcar, dedicatoria..."></div>
+        <div class="form-group full">
+          <label>Zona de Entrega</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="ped-zonas-wrap">
+            <div class="pago-opt" id="zona-xalapa" onclick="selectZona('XALAPA')" style="flex:none;padding:8px 16px"><span>📍</span> Xalapa</div>
+            <div class="pago-opt" id="zona-san-marcos" onclick="selectZona('SAN MARCOS')" style="flex:none;padding:8px 16px"><span>📍</span> San Marcos</div>
+            <div class="pago-opt" id="zona-coatepec" onclick="selectZona('COATEPEC')" style="flex:none;padding:8px 16px"><span>📍</span> Coatepec</div>
+          </div>
+        </div>
       </div>
       <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:10px;">Productos del Pedido</div>
       <div id="ped-products-list"></div>
@@ -681,6 +686,14 @@ tbody td{padding:11px 13px;color:var(--espresso);}
         <div class="form-group"><label>Cantidad</label><input type="number" id="edit-ped-cantidad" value="1" min="1"></div>
         <div class="form-group"><label>Precio Total ($)</label><input type="number" id="edit-ped-precio"></div>
         <div class="form-group full"><label>Notas</label><input type="text" id="edit-ped-notas"></div>
+        <div class="form-group full">
+          <label>Zona de Entrega</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;" id="edit-ped-zonas-wrap">
+            <div class="pago-opt" id="edit-zona-xalapa" onclick="selectZonaEdit('XALAPA')" style="flex:none;padding:8px 16px"><span>📍</span> Xalapa</div>
+            <div class="pago-opt" id="edit-zona-san-marcos" onclick="selectZonaEdit('SAN MARCOS')" style="flex:none;padding:8px 16px"><span>📍</span> San Marcos</div>
+            <div class="pago-opt" id="edit-zona-coatepec" onclick="selectZonaEdit('COATEPEC')" style="flex:none;padding:8px 16px"><span>📍</span> Coatepec</div>
+          </div>
+        </div>
         <div class="form-group full">
           <label>Forma de Pago</label>
           <div class="pago-select-wrap" style="margin-top:6px">
@@ -849,13 +862,16 @@ function refreshAll() {
 }
 
 function calcTotals() {
-  const ingSem = state.ingresos.filter(i=>isEnSemanaActual(i.fecha));
-  const egSem = state.egresos.filter(e=>isEnSemanaActual(e.fecha));
+  // Dashboard shows current week (fri to today)
+  const {start} = getSemanaActual();
+  const today = new Date(); today.setHours(23,59,59,999);
+  const ini = state.semanaInicio ? (()=>{const p=state.semanaInicio.split('/');return new Date(Number(p[2]),Number(p[1])-1,Number(p[0]));})() : start;
+  const ingSem = state.ingresos.filter(i=>{const d=parseFechaFin(i.fecha);return d&&d>=ini&&d<=today;});
+  const egSem = state.egresos.filter(e=>{const d=parseFechaFin(e.fecha);return d&&d>=ini&&d<=today;});
   const totalIngresos = ingSem.reduce((s,i)=>s+Number(i.monto),0);
   const totalEgresos = egSem.reduce((s,e)=>s+Number(e.monto),0);
   const efectivo = ingSem.filter(i=>i.forma_pago==='efectivo').reduce((s,i)=>s+Number(i.monto),0);
   const transferencia = ingSem.filter(i=>i.forma_pago==='transferencia').reduce((s,i)=>s+Number(i.monto),0);
-  // Caja = solo ingresos - egresos de la semana (sin sumar caja inicial)
   const caja = totalIngresos - totalEgresos;
   const pedidosActivos = state.pedidos.filter(p=>p.status==='pendiente').length;
   return {totalIngresos, totalEgresos, efectivo, transferencia, caja, pedidosActivos};
@@ -947,7 +963,15 @@ function renderProductos() {
 // ── VENTAS ──
 function openVentaModal() {
   if(state.productos.length===0){toast('Agrega productos primero');return;}
-  ventaItems={}; ventaPago='';
+  ventaItems={}; ventaPago=''; ventaZona='XALAPA';
+  const hoy=new Date().toISOString().split('T')[0];
+  setTimeout(()=>{
+    const fechaEl=document.getElementById('venta-fecha');
+    if(fechaEl) fechaEl.value=hoy;
+    const comprEl=document.getElementById('venta-comprador');
+    if(comprEl) comprEl.value='';
+    selectVentaZona('XALAPA');
+  },50);
   renderVentaModal(); openModal('modal-venta');
 }
 function quickVenta(id){ventaItems={[id]:1};ventaPago='';renderVentaModal();openModal('modal-venta');}
@@ -991,10 +1015,22 @@ function updateVentaResumen() {
   ['opt-efectivo','opt-transferencia'].forEach(id=>document.getElementById(id).className='pago-opt');
   if(ventaPago) document.getElementById('opt-'+ventaPago).classList.add('selected-'+ventaPago);
 }
+let ventaZona = 'XALAPA';
+
 function selectPago(tipo) {
   ventaPago=tipo;
   ['opt-efectivo','opt-transferencia'].forEach(id=>document.getElementById(id).className='pago-opt');
   document.getElementById('opt-'+tipo).classList.add('selected-'+tipo);
+}
+
+function selectVentaZona(zona) {
+  ventaZona=zona;
+  ['venta-zona-xalapa','venta-zona-san-marcos','venta-zona-coatepec'].forEach(id=>{
+    const el=document.getElementById(id);if(el){el.className='pago-opt';el.style.cssText='flex:none;padding:8px 16px';}
+  });
+  const key='venta-zona-'+zona.toLowerCase().replace(' ','-');
+  const el=document.getElementById(key);
+  if(el) el.classList.add('selected-efectivo');
 }
 async function confirmarVenta() {
   const ids=Object.keys(ventaItems);
@@ -1003,11 +1039,17 @@ async function confirmarVenta() {
   let total=0; let qty=0; const parts=[];
   ids.forEach(id=>{const p=state.productos.find(x=>x.id==id);const q=ventaItems[id];total+=p.precio*q;qty+=q;parts.push(p.nombre+' ×'+q);});
   const now=new Date();
-  const fecha=now.toLocaleDateString('es-MX')+' '+now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const fechaInputEl=document.getElementById('venta-fecha');
+  const fechaInput=fechaInputEl?fechaInputEl.value:'';
+  let fechaVenta;
+  if(fechaInput){const p=fechaInput.split('-');fechaVenta=`${p[2]}/${p[1]}/${p[0]}`;}
+  else{fechaVenta=now.toLocaleDateString('es-MX');}
+  const comprador=document.getElementById('venta-comprador')?document.getElementById('venta-comprador').value.trim():'';
+  const fechaHora=fechaVenta+' '+now.toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
   const concepto=parts.join(', ');
   showLoading('Registrando venta...');
-  const {data:v} = await db.from('ventas').insert({concepto,cantidad:qty,monto:total,forma_pago:ventaPago,fecha}).select().single();
-  const {data:i} = await db.from('ingresos').insert({concepto:'Venta: '+concepto,monto:total,forma_pago:ventaPago,fecha:now.toLocaleDateString('es-MX')}).select().single();
+  const {data:v} = await db.from('ventas').insert({concepto,cantidad:qty,monto:total,forma_pago:ventaPago,fecha:fechaHora,zona:ventaZona,comprador}).select().single();
+  const {data:i} = await db.from('ingresos').insert({concepto:'Venta: '+concepto,monto:total,forma_pago:ventaPago,fecha:fechaVenta,zona:ventaZona,comprador}).select().single();
   hideLoading();
   state.ventas.push(v); state.ingresos.push(i);
   closeModal('modal-venta'); refreshAll();
@@ -1017,7 +1059,9 @@ function renderVentasHist() {
   const tbody=document.getElementById('ventas-hist-body');
   if(state.ventas.length===0){tbody.innerHTML='<tr><td colspan="5"><div class="empty-state"><p>Sin ventas</p></div></td></tr>';return;}
   tbody.innerHTML=[...state.ventas].reverse().map(v=>`<tr>
-    <td>${v.concepto}</td><td>${v.cantidad}</td>
+    <td>${v.concepto}${v.comprador?'<br><span style="font-size:11px;color:var(--warm-gray)">👤 '+v.comprador+'</span>':''}</td>
+    <td>${v.cantidad}</td>
+    <td>${v.zona?'<span style="font-size:11px">📍'+v.zona+'</span>':'—'}</td>
     <td>${v.forma_pago==='efectivo'?'<span class="badge badge-green">💵 Efectivo</span>':'<span class="badge badge-blue">📲 Transferencia</span>'}</td>
     <td class="amount-income">${fmt(v.monto)}</td>
     <td style="color:var(--warm-gray);font-size:12px">${v.fecha}</td>
@@ -1026,6 +1070,32 @@ function renderVentasHist() {
 
 // ── PEDIDOS ──
 let pedidoItems = {}; // {productoId: qty}
+let pedidoZona = '';
+let editPedidoZona = '';
+
+function selectZona(zona) {
+  pedidoZona = zona;
+  ['zona-xalapa','zona-san-marcos','zona-coatepec'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.className='pago-opt';
+    if(el) el.style.cssText='flex:none;padding:8px 16px';
+  });
+  const key = 'zona-'+zona.toLowerCase().replace(' ','-');
+  const el=document.getElementById(key);
+  if(el){el.classList.add('selected-efectivo');}
+}
+
+function selectZonaEdit(zona) {
+  editPedidoZona = zona;
+  ['edit-zona-xalapa','edit-zona-san-marcos','edit-zona-coatepec'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.className='pago-opt';
+    if(el) el.style.cssText='flex:none;padding:8px 16px';
+  });
+  const key = 'edit-zona-'+zona.toLowerCase().replace(' ','-');
+  const el=document.getElementById(key);
+  if(el){el.classList.add('selected-efectivo');}
+}
 
 function openPedidoModal() {
   ['ped-cliente','ped-ubicacion','ped-notas'].forEach(id=>document.getElementById(id).value='');
@@ -1035,7 +1105,9 @@ function openPedidoModal() {
   document.getElementById('grupo-ubicacion').style.display='none';
   pedidoItems={};
   pedidoPago='';
+  pedidoZona='';
   ['ped-opt-efectivo','ped-opt-transferencia','ped-opt-pendiente'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='pago-opt';});
+  ['zona-xalapa','zona-san-marcos','zona-coatepec'].forEach(id=>{const el=document.getElementById(id);if(el){el.className='pago-opt';el.style.cssText='flex:none;padding:8px 16px';}});
   renderPedidoProducts();
   openModal('modal-pedido');
 }
@@ -1101,6 +1173,7 @@ async function savePedido() {
     tipo_entrega:document.getElementById('ped-tipo-entrega').value,
     forma_pago:pedidoPago||'pendiente',
     ubicacion:document.getElementById('ped-ubicacion').value.trim(),
+    zona:pedidoZona||'XALAPA',
     cantidad,precio,
     notas:document.getElementById('ped-notas').value.trim(),status:'pendiente'
   }).select().single();
@@ -1177,20 +1250,20 @@ function renderProduccion() {
   if(!resumenEl||!listaEl) return;
   if(pendientes.length===0){resumenEl.style.display='none';return;}
   
-  // Count products from all pending pedidos
   const conteo = {};
   pendientes.forEach(p=>{
     if(!p.producto) return;
-    // Parse "PROD ×N, PROD2 ×M" or "PROD ×N" or just "PROD"
     p.producto.split(',').forEach(part=>{
-      const m = part.trim().match(/^(.+?)\s*×(\d+)$/);
-      if(m){
-        const name=m[1].trim(); const qty=Number(m[2]);
+      const trimmed = part.trim();
+      // Match "NOMBRE ×N" or "NOMBRE"
+      const mX = trimmed.match(/^(.+?)\s*[×x](\d+)\s*$/i);
+      if(mX){
+        const name=mX[1].trim(); const qty=Number(mX[2]);
         conteo[name]=(conteo[name]||0)+qty;
       } else {
-        const name=part.trim();
-        const qty=Number(p.cantidad)||1;
-        if(name) conteo[name]=(conteo[name]||0)+qty;
+        // Single product - use pedido cantidad
+        const name=trimmed.replace(/\s*—.*$/,'').trim();
+        if(name) conteo[name]=(conteo[name]||0)+(Number(p.cantidad)||1);
       }
     });
   });
@@ -1204,6 +1277,22 @@ function renderProduccion() {
       <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--gold-dark);min-width:36px">${qty}</div>
       <div style="font-size:12px;font-weight:500;color:var(--espresso);line-height:1.3">${name}</div>
     </div>`).join('');
+
+  // Zona summary
+  const zonas={};
+  pendientes.forEach(p=>{const z=p.zona||'SIN ZONA';zonas[z]=(zonas[z]||0)+1;});
+  const zonasEl=document.getElementById('produccion-zonas');
+  const zonasListaEl=document.getElementById('produccion-zonas-lista');
+  if(zonasEl&&zonasListaEl&&Object.keys(zonas).length>0){
+    zonasEl.style.display='block';
+    zonasListaEl.innerHTML=Object.entries(zonas).map(([z,n])=>`
+      <div style="background:var(--white);border-radius:3px;padding:8px 14px;box-shadow:0 1px 4px var(--shadow);display:flex;align-items:center;gap:8px;">
+        <span style="font-size:16px">📍</span>
+        <span style="font-size:12px;font-weight:500">${z}</span>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:500;color:var(--gold-dark)">${n}</span>
+        <span style="font-size:11px;color:var(--warm-gray)">pedidos</span>
+      </div>`).join('');
+  }
 }
 
 function selectPagoEdit(tipo) {
@@ -1239,6 +1328,12 @@ function abrirEditarPedido(id) {
   ['edit-opt-efectivo','edit-opt-transferencia','edit-opt-pendiente'].forEach(i=>{const el=document.getElementById(i);if(el)el.className='pago-opt';});
   const pagoEl=document.getElementById('edit-opt-'+editPedidoPago);
   if(pagoEl) pagoEl.classList.add(editPedidoPago==='pendiente'?'selected-transferencia':'selected-'+editPedidoPago);
+  // Set zona
+  editPedidoZona = ped.zona||'XALAPA';
+  ['edit-zona-xalapa','edit-zona-san-marcos','edit-zona-coatepec'].forEach(id=>{const el=document.getElementById(id);if(el){el.className='pago-opt';el.style.cssText='flex:none;padding:8px 16px';}});
+  const zonaKey='edit-zona-'+(editPedidoZona).toLowerCase().replace(' ','-');
+  const zonaEl=document.getElementById(zonaKey);
+  if(zonaEl) zonaEl.classList.add('selected-efectivo');
   openModal('modal-editar-pedido');
 }
 
@@ -1252,6 +1347,7 @@ async function guardarEdicionPedido() {
     hora:document.getElementById('edit-ped-hora').value,
     tipo_entrega:document.getElementById('edit-ped-tipo-entrega').value,
     ubicacion:document.getElementById('edit-ped-ubicacion').value.trim(),
+    zona:editPedidoZona||'XALAPA',
     cantidad:document.getElementById('edit-ped-cantidad').value,
     precio:document.getElementById('edit-ped-precio').value||null,
     notas:document.getElementById('edit-ped-notas').value.trim(),
@@ -1283,6 +1379,7 @@ function renderPedidos() {
           ${p.forma_pago&&p.forma_pago!=='pendiente'?(p.forma_pago==='efectivo'?'💵 Efectivo':'📲 Transferencia'):'⏳ Pago al entregar'} &nbsp;·&nbsp;
           📅 ${p.fecha}${p.hora?' a las '+p.hora:''}<br>
           ${p.tipo_entrega==='domicilio'?'📍 '+(p.ubicacion||'Sin dirección'):'🏪 Pasa a recoger'}
+          ${p.zona?'<br>🗺️ '+p.zona:''}
           ${p.notas?'<br>💬 '+p.notas:''}
         </div>
       </div>
@@ -1462,20 +1559,73 @@ async function deleteEgreso(id) {
   state.egresos=state.egresos.filter(i=>i.id!==id);
   renderFinanzas(); refreshDashboard(); toast('Egreso eliminado');
 }
+// Finance date filter state
+let finFechaIni = null;
+let finFechaFin = null;
+
+function parseFechaFin(f) {
+  if(!f) return null;
+  const base = f.split(' ')[0];
+  const p = base.split('/');
+  if(p.length<3) return null;
+  return new Date(Number(p[2]), Number(p[1])-1, Number(p[0]));
+}
+
+function filtrarFinanzas() {
+  const ini = document.getElementById('fin-fecha-ini').value;
+  const fin = document.getElementById('fin-fecha-fin').value;
+  if(!ini||!fin){toast('⚠ Selecciona ambas fechas');return;}
+  finFechaIni = new Date(ini+'T00:00:00');
+  finFechaFin = new Date(fin+'T23:59:59');
+  renderFinanzas();
+}
+
+function finanzasHoy() {
+  const hoy = new Date().toISOString().split('T')[0];
+  document.getElementById('fin-fecha-ini').value=hoy;
+  document.getElementById('fin-fecha-fin').value=hoy;
+  finFechaIni = new Date(hoy+'T00:00:00');
+  finFechaFin = new Date(hoy+'T23:59:59');
+  renderFinanzas();
+}
+
+function finanzasEstaSemana() {
+  const {start,end} = getSemanaActual();
+  const toIso = d => d.toISOString().split('T')[0];
+  document.getElementById('fin-fecha-ini').value=toIso(start);
+  document.getElementById('fin-fecha-fin').value=toIso(end);
+  finFechaIni = start;
+  finFechaFin = end;
+  renderFinanzas();
+}
+
+function finanzasTodo() {
+  document.getElementById('fin-fecha-ini').value='';
+  document.getElementById('fin-fecha-fin').value='';
+  finFechaIni = null;
+  finFechaFin = null;
+  renderFinanzas();
+}
+
 function renderFinanzas() {
-  const ingSem = state.ingresos.filter(i=>isEnSemanaActual(i.fecha));
-  const egSem = state.egresos.filter(e=>isEnSemanaActual(e.fecha));
-  const totalIngresos = ingSem.reduce((s,i)=>s+Number(i.monto),0);
-  const totalEgresos = egSem.reduce((s,e)=>s+Number(e.monto),0);
-  const efectivo = ingSem.filter(i=>i.forma_pago==='efectivo').reduce((s,i)=>s+Number(i.monto),0);
-  const transferencia = ingSem.filter(i=>i.forma_pago==='transferencia').reduce((s,i)=>s+Number(i.monto),0);
+  // Filter by selected date range or show all
+  const ingFilt = finFechaIni ? state.ingresos.filter(i=>{const d=parseFechaFin(i.fecha);return d&&d>=finFechaIni&&d<=finFechaFin;}) : state.ingresos;
+  const egFilt = finFechaIni ? state.egresos.filter(e=>{const d=parseFechaFin(e.fecha);return d&&d>=finFechaIni&&d<=finFechaFin;}) : state.egresos;
+  const totalIngresos = ingFilt.reduce((s,i)=>s+Number(i.monto),0);
+  const totalEgresos = egFilt.reduce((s,e)=>s+Number(e.monto),0);
+  const efectivo = ingFilt.filter(i=>i.forma_pago==='efectivo').reduce((s,i)=>s+Number(i.monto),0);
+  const transferencia = ingFilt.filter(i=>i.forma_pago==='transferencia').reduce((s,i)=>s+Number(i.monto),0);
   const caja = totalIngresos - totalEgresos;
-  document.getElementById('caja-inicial-display').textContent=fmt(state.cajaInicial);
   document.getElementById('fin-ingresos-total').textContent=fmt(totalIngresos);
   document.getElementById('fin-egresos-total').textContent=fmt(totalEgresos);
   document.getElementById('caja-final-display').textContent=fmt(caja);
   document.getElementById('fin-efectivo').textContent=fmt(efectivo);
   document.getElementById('fin-transferencia').textContent=fmt(transferencia);
+  const periodoEl=document.getElementById('fin-periodo-label');
+  if(periodoEl){
+    if(finFechaIni){const opts={day:'numeric',month:'short'};periodoEl.textContent=finFechaIni.toLocaleDateString('es-MX',opts)+' – '+finFechaFin.toLocaleDateString('es-MX',opts);}
+    else periodoEl.textContent='Todo el historial';
+  }
 
   const ib=document.getElementById('ingresos-body');
   ib.innerHTML=state.ingresos.length===0?'<tr><td colspan="5"><div class="empty-state"><p>Sin ingresos</p></div></td></tr>':
@@ -1570,21 +1720,33 @@ function generarResumen() {
   document.getElementById('rpt-num-ventas').textContent=ventasFiltradas.length;
   document.getElementById('rpt-resultado').style.display='block';
 
-  // Product ranking
+  // Product ranking - ventas + pedidos finalizados
   const conteo = {};
-  ventasFiltradas.forEach(v=>{
-    // parse concepto: "PROD ×N, PROD2 ×M"
-    v.concepto.split(',').forEach(part=>{
-      const m = part.trim().match(/^(.+)\s×(\d+)$/);
-      if(m){
-        const name=m[1].trim(); const qty=Number(m[2]);
+  
+  function parseProd(texto, cantidadDefault) {
+    if(!texto) return;
+    texto.split(',').forEach(part=>{
+      const trimmed = part.trim();
+      const mX = trimmed.match(/^(.+?)\s*[×x](\d+)\s*$/i);
+      if(mX){
+        const name=mX[1].trim(); const qty=Number(mX[2]);
         conteo[name]=(conteo[name]||0)+qty;
       } else {
-        const name=part.trim();
-        if(name) conteo[name]=(conteo[name]||0)+1;
+        const name=trimmed.replace(/\s*—.*$/,'').trim();
+        if(name) conteo[name]=(conteo[name]||0)+(cantidadDefault||1);
       }
     });
-  });
+  }
+
+  // From ventas
+  ventasFiltradas.forEach(v=> parseProd(v.concepto, v.cantidad||1));
+
+  // From pedidos finalizados in date range
+  state.pedidos.filter(p=>{
+    if(p.status!=='finalizado') return false;
+    const d = parseFecha(p.fecha);
+    return d && d >= ini && d <= fin;
+  }).forEach(p=> parseProd(p.producto, p.cantidad||1));
   const sorted = Object.entries(conteo).sort((a,b)=>b[1]-a[1]);
   const rank = document.getElementById('rpt-productos-ranking');
   if(sorted.length===0){rank.innerHTML='<div class="empty-state"><p>Sin ventas en este período</p></div>';return;}
