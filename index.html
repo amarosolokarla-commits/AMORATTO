@@ -943,6 +943,28 @@ async function doLogin() {
 document.addEventListener('keydown', e => {
   if(e.key==='Enter' && document.getElementById('login-screen').style.display!=='none') doLogin();
 });
+// ── AUTO-ACTUALIZACIÓN (datos de otros colaboradores) ──
+let _syncBusy=false, _syncUltimo=0;
+async function syncSilencioso(){
+  if(_syncBusy || !dataLoaded) return;
+  const app=document.getElementById('app');
+  if(!app || app.style.display==='none') return;
+  if(document.querySelector('.modal-overlay.active')) return; // no interrumpir mientras captura algo
+  if(document.hidden) return;
+  if(Date.now()-_syncUltimo<8000) return;
+  _syncBusy=true; _syncUltimo=Date.now();
+  try{
+    const prevError=window._loadError;
+    const ok=await loadAllData(1);
+    if(ok){ refreshAll(); }
+    else { dataLoaded=true; window._loadError=prevError; } // falla silenciosa: conserva lo que ya hay
+  }catch(e){ console.error('Sync:',e); dataLoaded=true; }
+  _syncBusy=false;
+}
+setInterval(syncSilencioso, 30000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) syncSilencioso(); });
+window.addEventListener('focus', syncSilencioso);
+
 async function doLogout(){ try{await db.auth.signOut();}catch(e){} location.reload(); }
 
 // ── SUPABASE LOAD ──
